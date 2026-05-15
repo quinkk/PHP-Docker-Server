@@ -1,0 +1,22 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Environment
+.env
+
+# Dependencies / builds
+vendor/
+node_modules/
+
+# Runtime data
+docker/mariadb/data/
+docker/mariadb/mariadb.sql
+docker/nginx/ssl/*.key
+docker/nginx/ssl/*.crt
+
+# Logs / cache
+*.log
+.phpunit.result.cache

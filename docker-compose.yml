@@ -1,0 +1,100 @@
+services:
+  nginx:
+    image: nginx:1.27
+    container_name: app_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"         # HTTP for your app (optional)
+      - "127.0.0.1:9999:9999"       # HTTPS for phpMyAdmin
+      - "8888:8888"       # HTTPS for PHP app
+      - "8001:8001"       # HTTPS for PHP app
+      - "8002:8002"       # HTTPS for PHP app
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ./src:/var/www/html
+      - ./docker/nginx/ssl/server.crt:/etc/nginx/ssl/app.local.crt:ro
+      - ./docker/nginx/ssl/server.key:/etc/nginx/ssl/app.local.key:ro
+      - ./docker/nginx/ssl/server.crt:/etc/nginx/ssl/api.local.crt:ro
+      - ./docker/nginx/ssl/server.key:/etc/nginx/ssl/api.local.key:ro
+    depends_on:
+      - php
+      - phpmyadmin
+    networks:
+      - app_net
+
+  php:
+    build: ./docker/php
+    container_name: app_php
+    restart: unless-stopped
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+    environment:
+      APP_ENV: local
+    networks:
+      - app_net
+
+  mariadb:
+    image: mariadb:11
+    container_name: app_mariadb
+    restart: unless-stopped
+    command:
+      - --max-connections=500
+      - --max-allowed-packet=1G
+      - --wait-timeout=60
+      - --interactive-timeout=60
+      - --innodb-buffer-pool-size=8G
+      - --innodb-log-file-size=512M
+      - --innodb-flush-method=O_DIRECT
+      - --innodb-flush-log-at-trx-commit=2
+      - --innodb-io-capacity=2000
+      - --innodb-io-capacity-max=4000
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --bind-address=0.0.0.0
+    environment:
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      # - ./docker/mariadb/data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3308:3306"
+    networks:
+      - app_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: app_redis
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.3
+    container_name: app_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: root
+      PMA_PASSWORD: rootpass
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 6144M
+      PMA_ABSOLUTE_URI: https://localhost:9999/
+    volumes:
+      - ./docker/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:ro
+      - ./docker/phpmyadmin/servername.conf:/etc/apache2/conf-enabled/servername.conf:ro
+      - ./docker/phpmyadmin/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    external: true
+
+volumes:
+  mariadb_data:
