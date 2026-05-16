@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     ports:
       - "8080:80"         # HTTP for your app (optional)
-      - "127.0.0.1:9999:9999"       # HTTPS for phpMyAdmin
+      - "100.93.132.62:9999:9999"       # HTTPS for phpMyAdmin
       - "8888:8888"       # HTTPS for PHP app
       - "8001:8001"       # HTTPS for PHP app
       - "8002:8002"       # HTTPS for PHP app
@@ -61,7 +61,7 @@ services:
       # - ./docker/mariadb/data:/var/lib/mysql
       - mariadb_data:/var/lib/mysql
     ports:
-      - "3308:3306"
+      - "100.93.132.62:3308:3306"
     networks:
       - app_net
 
@@ -84,7 +84,7 @@ services:
       PMA_PASSWORD: rootpass
       PMA_ARBITRARY: 1
       UPLOAD_LIMIT: 6144M
-      PMA_ABSOLUTE_URI: https://localhost:9999/
+      PMA_ABSOLUTE_URI: https://100.93.132.62:9999/
     volumes:
       - ./docker/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:ro
       - ./docker/phpmyadmin/servername.conf:/etc/apache2/conf-enabled/servername.conf:ro
