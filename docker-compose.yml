@@ -43,7 +43,7 @@ services:
       - --max-allowed-packet=1G
       - --wait-timeout=60
       - --interactive-timeout=60
-      - --innodb-buffer-pool-size=8G
+      - --innodb-buffer-pool-size=16G
       - --innodb-log-file-size=512M
       - --innodb-flush-method=O_DIRECT
       - --innodb-flush-log-at-trx-commit=2
